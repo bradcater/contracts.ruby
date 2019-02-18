@@ -81,7 +81,7 @@ module Contracts
       private
 
       def empty_val?
-        @value.nil? || @value == ""
+        !@value || @value == ""
       end
 
       def full?

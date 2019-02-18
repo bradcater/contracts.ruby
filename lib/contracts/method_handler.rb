@@ -18,15 +18,12 @@ module Contracts
     # @param [Bool] is_class_method
     # @param [Class] target - class that method got added to
     def initialize(method_name, is_class_method, target)
-      @method_name = method_name
-      @is_class_method = is_class_method
-      @target = target
+      @method_name, @is_class_method, @target = method_name, is_class_method, target
     end
 
     # Handles method addition
     def handle
-      return unless engine?
-      return if decorators.empty?
+      return if !engine? || decorators.empty?
 
       validate_decorators!
       validate_pattern_matching!
@@ -69,7 +66,8 @@ module Contracts
     end
 
     def ignore_decorators?
-      ENV["NO_CONTRACTS"] && !pattern_matching?
+      return @_ignore_decorators if defined?(@_ignore_decorators)
+      @_ignore_decorators = ENV["NO_CONTRACTS"] && !pattern_matching?
     end
 
     def decorated_methods
@@ -91,20 +89,18 @@ module Contracts
     end
 
     def decorator_class
-      decorators.first[0]
+      decorators[0][0]
     end
 
     def decorator_args
-      decorators.first[1]
+      decorators[0][1]
     end
 
     def redefine_method
       return if ignore_decorators?
 
       # Those are required for instance_eval to be able to refer them
-      name = method_name
-      method_type = _method_type
-      current_engine = engine
+      name, method_type, current_engine = method_name, _method_type, engine
 
       # We are gonna redefine original method here
       method_reference.make_definition(target) do |*args, &blk|

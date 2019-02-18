@@ -14,10 +14,11 @@ module Contracts
       maybe_append_options!(args, blk)
 
       # Loop forward validating the arguments up to the splat (if there is one)
-      (@args_contract_index || args.size).times do |i|
-        contract = args_contracts[i]
-        arg = args[i]
-        validator = @args_validators[i]
+      i = -1
+      while true
+        i += 1
+        break if i >= (@args_contract_index || args.size)
+        contract, arg, validator = args_contracts[i], args[i], @args_validators[i]
 
         unless validator && validator[arg]
           data = {:arg => arg,
@@ -44,7 +45,10 @@ module Contracts
       # Keep validating but use this upper index to get the splat validator.
       if @args_contract_index
         splat_upper_index = @args_contract_index
-        (args.size - @args_contract_index).times do |i|
+        i = -1
+        while true
+          i += 1
+          break if i >= (args.size - @args_contract_index)
           arg = args[args.size - 1 - i]
 
           if args_contracts[args_contracts.size - 1 - i].is_a?(Contracts::Args)

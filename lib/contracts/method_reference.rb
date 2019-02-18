@@ -7,8 +7,7 @@ module Contracts
     # name - name of the method
     # method - method object
     def initialize(name, method)
-      @name = name
-      @method = method
+      @name, @method = name, method
     end
 
     # Returns method_position, delegates to Support.method_position
@@ -18,8 +17,7 @@ module Contracts
 
     # Makes a method re-definition in proper way
     def make_definition(this, &blk)
-      is_private = private?(this)
-      is_protected = protected?(this)
+      is_private, is_protected = private?(this), protected?(this)
       alias_target(this).send(:define_method, name, &blk)
       make_private(this) if is_private
       make_protected(this) if is_protected
@@ -29,8 +27,7 @@ module Contracts
     # only to this class. Usually done right before re-defining the
     # method.
     def make_alias(this)
-      _aliased_name = aliased_name
-      original_name = name
+      _aliased_name, original_name = aliased_name, name
 
       alias_target(this).class_eval do
         alias_method _aliased_name, original_name

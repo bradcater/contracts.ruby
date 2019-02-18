@@ -5,10 +5,10 @@ module Contracts
         return method.method_position if method.is_a?(MethodReference)
 
         file, line = method.source_location
-        if file.nil? || line.nil?
+        if !file || !line
           ""
         else
-          file + ":" + line.to_s
+          "#{file}:#{line}"
         end
       end
 
@@ -22,7 +22,7 @@ module Contracts
       #    Contracts::Support.unique_id   # => "i53u6tiw5hbo"
       def unique_id
         # Consider using SecureRandom.hex here, and benchmark which one is better
-        (Time.now.to_f * 1000).to_i.to_s(36) + rand(1_000_000).to_s(36)
+        "#{(Time.now.to_f * 1000).to_i.to_s(36)}#{Random.rand(1_000_000).to_s(36)}"
       end
 
       def contract_id(contract)

@@ -52,7 +52,7 @@ class Contract < Contracts::Decorator
 
   attr_reader :args_contracts, :ret_contract, :klass, :method
   def initialize(klass, method, *contracts)
-    unless contracts.last.is_a?(Hash)
+    unless contracts[-1].is_a?(Hash)
       unless contracts.one?
         fail %{
           It looks like your contract for #{method.name} doesn't have a return
@@ -81,7 +81,7 @@ class Contract < Contracts::Decorator
     @pattern_match = false
 
     # == @has_proc_contract
-    last_contract = args_contracts.last
+    last_contract = args_contracts[-1]
     is_a_proc = last_contract.is_a?(Class) && (last_contract <= Proc || last_contract <= Method)
     maybe_a_proc = last_contract.is_a?(Contracts::Maybe) && last_contract.include_proc?
 
@@ -90,7 +90,7 @@ class Contract < Contracts::Decorator
     # ====
 
     # == @has_options_contract
-    last_contract = args_contracts.last
+    last_contract = args_contracts[-1]
     penultimate_contract = args_contracts[-2]
     @has_options_contract = if @has_proc_contract
                               penultimate_contract.is_a?(Hash) || penultimate_contract.is_a?(Contracts::Builtin::KeywordArgs)
@@ -276,6 +276,6 @@ class Contract < Contracts::Decorator
 
   # Used to determine if contract is a pattern matching contract
   def pattern_match?
-    @pattern_match == true
+    @pattern_match
   end
 end

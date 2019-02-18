@@ -130,9 +130,9 @@ module Contracts
       end
 
       def to_s
-        @vals[0, @vals.size-1].map do |x|
+        "#{@vals[0, @vals.size-1].map do |x|
           InspectWrapper.create(x)
-        end.join(", ") + " xor " + InspectWrapper.create(@vals[-1]).to_s
+        end.join(", ")} xor #{InspectWrapper.create(@vals[-1])}"
       end
     end
 
@@ -152,9 +152,9 @@ module Contracts
       end
 
       def to_s
-        @vals[0, @vals.size-1].map do |x|
+        "#{@vals[0, @vals.size-1].map do |x|
           InspectWrapper.create(x)
-        end.join(", ") + " and " + InspectWrapper.create(@vals[-1]).to_s
+        end.join(", ")} and #{InspectWrapper.create(@vals[-1])}"
       end
     end
 
@@ -365,21 +365,20 @@ module Contracts
 
       def initialize(key, value = nil)
         if value
-          @key   = key
-          @value = value
+          @key, @value = key, value
         else
           validate_hash(key)
-          @key   = key.keys.first
+          @key   = key.keys[0]
           @value = key[@key]
         end
       end
 
       def valid?(hash)
         return false unless hash.is_a?(Hash)
-        keys_match = hash.keys.map { |k| Contract.valid?(k, @key) }.all?
-        vals_match = hash.values.map { |v| Contract.valid?(v, @value) }.all?
+        keys_match = hash.keys.all? { |k| Contract.valid?(k, @key) }
+        vals_match = hash.values.all? { |v| Contract.valid?(v, @value) }
 
-        [keys_match, vals_match].all?
+        keys_match && vals_match
       end
 
       def to_s
@@ -389,7 +388,7 @@ module Contracts
       private
 
       def validate_hash(hash)
-        fail ArgumentError, INVALID_KEY_VALUE_PAIR unless hash.count == 1
+        fail ArgumentError, INVALID_KEY_VALUE_PAIR unless hash.size == 1
       end
     end
 
@@ -421,8 +420,7 @@ module Contracts
       end
 
       def valid?(hash)
-        return false unless hash.is_a?(Hash)
-        return false unless hash.keys - options.keys == []
+        return false unless hash.is_a?(Hash) && (hash.keys - options.keys == [])
         options.all? do |key, contract|
           Optional._valid?(hash, key, contract)
         end
@@ -478,8 +476,7 @@ module Contracts
       end
 
       def initialize(contract)
-        @contract = contract
-        @within_opt_hash = false
+        @contract, @within_opt_hash = contract, false
       end
 
       def within_opt_hash!

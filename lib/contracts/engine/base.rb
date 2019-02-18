@@ -29,7 +29,7 @@ module Contracts
       #
       # @param [Class] klass - class that owns this engine
       def initialize(klass)
-        @klass = klass
+        @klass, @_decorated_methods = klass, { :class_methods => {}, :instance_methods => {} }
       end
 
       # Adds provided decorator to the engine
@@ -63,15 +63,15 @@ module Contracts
       # @param [Symbol] name - method name
       # @return [ArrayOf[Decorator]]
       def decorated_methods_for(type, name)
-        Array(decorated_methods[type][name])
+        Array(@_decorated_methods[type][name])
       end
 
       # Returns true if there are any decorated methods
       #
       # @return [Bool]
       def decorated_methods?
-        !decorated_methods[:class_methods].empty? ||
-          !decorated_methods[:instance_methods].empty?
+        !@_decorated_methods[:class_methods].empty? ||
+          !@_decorated_methods[:instance_methods].empty?
       end
 
       # Adds method decorator
@@ -80,16 +80,15 @@ module Contracts
       # @param [Symbol] name - method name
       # @param [Decorator] decorator - method decorator
       def add_method_decorator(type, name, decorator)
-        decorated_methods[type][name] ||= []
-        decorated_methods[type][name] << decorator
+        @_decorated_methods[type][name] ||= []
+        @_decorated_methods[type][name] << decorator
       end
 
       # Returns nearest ancestor's engine that has decorated methods
       #
       # @return [Engine::Base or Engine::Eigenclass]
       def nearest_decorated_ancestor
-        current = klass
-        current_engine = self
+        current, current_engine = klass, self
         ancestors = current.ancestors[1..-1]
 
         while current && current_engine && !current_engine.decorated_methods?
@@ -103,10 +102,6 @@ module Contracts
       private
 
       attr_reader :klass
-
-      def decorated_methods
-        @_decorated_methods ||= { :class_methods => {}, :instance_methods => {} }
-      end
 
       # No-op because it is safe to add decorators to normal classes
       def validate!
